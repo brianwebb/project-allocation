@@ -30,22 +30,13 @@ namespace Tests
             };
             var projects = new List<Project>
             {
-                new Project(supervisors[0]) { Name = "some example project", Capacity = 1, Supervisor = supervisors[0] },
-                new Project(supervisors[1]) { Name = "some other example project", Capacity = 2, Supervisor = supervisors[1] },
-                new Project(supervisors[1]) { Name = "some third example project", Capacity = 1, Supervisor = supervisors[1] }
+                new Project(supervisors[0]) { Name = "some example project", Capacity = 1 },
+                new Project(supervisors[1]) { Name = "some other example project", Capacity = 2 },
+                new Project(supervisors[1]) { Name = "some third example project", Capacity = 1 }
             };
-            var students = new List<Student>
-            {
-                new Student(new List<Project>{ projects[0] }) { Id = "firststudentid" },
-                new Student(new List<Project>{ projects[1] }) { Id = "secondstudentid" },
-                new Student(new List<Project>{ projects[2] }) { Id = "thirdstudentid" },
-                new Student(new List<Project>{ projects[1], projects[0] }) { Id = "fourthstudentid" }
-            };
-
             _state = new State
             {
                 Projects = projects,
-                Students = students,
                 Supervisors = supervisors
             };
 
@@ -63,7 +54,12 @@ namespace Tests
         [Test]
         public void ShouldBlowUpIfNotEnoughCapacityForStudents()
         {
-            _state.Supervisors[0].Capacity--;
+            _state.Students.Add(new Student(null));
+            _state.Students.Add(new Student(null));
+            _state.Students.Add(new Student(null));
+            _state.Students.Add(new Student(null));
+            _state.Students.Add(new Student(null));
+            _state.Students.Add(new Student(null));
 
             Processor()
                 .Invoking(processor => processor.Process(_state))
@@ -71,16 +67,31 @@ namespace Tests
         }
 
         [Test]
+        public void ShouldAssignStudentsToPreferredProject()
+        {
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[2] }));
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }));
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[0] }));
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }));
+
+            var result = Processor().Process(_state);
+
+            result[_state.Students[0]].Should().Be(_state.Projects[2]);
+            result[_state.Students[1]].Should().Be(_state.Projects[1]);
+            result[_state.Students[2]].Should().Be(_state.Projects[0]);
+            result[_state.Students[3]].Should().Be(_state.Projects[1]);
+        }
+
+        [Test]
         public void ShouldRandomlyAssignStudentsIfNoneHavePreferences()
         {
-            foreach (var student in _state.Students)
+            _state.Students = new List<Student>
             {
-                student.Preferences.Clear();
-            }
-            foreach (var project in _state.Projects)
-            {
-                project.InterestedStudents.Clear();
-            }
+                new Student(null) { Id = "firststudentid" },
+                new Student(null) { Id = "secondstudentid" },
+                new Student(null) { Id = "thirdstudentid" },
+                new Student(null) { Id = "fourthstudentid" }
+            };
 
             // This is the default anyway. Just being explicit. Always just give them the first project that's left.
             _randomNumberProvider

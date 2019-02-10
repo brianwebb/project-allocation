@@ -23,27 +23,37 @@ namespace ProjectAllocation.Core
             if (state.Students.Count < state.Supervisors.Sum(supervisor => supervisor.Capacity))
                 throw new ArgumentException($"Not enough capacity for the student list provided. Capacity = {state.Supervisors.Sum(supervisor => supervisor.Capacity)}, Student count = {state.Students.Count}", nameof(state));
 
-            while (!state.IsSolved)
+            // Assign based on preferences. Highest GPA -> lowest
+            var studentsByGpa = state.Students
+                .Where(student => student.ProjectInterests.Count > 0)
+                .OrderByDescending(student => student.Gpa);
+
+            foreach (var student in studentsByGpa)
             {
-                // TODO: Assign based on preferences
-                
-                var projectsLeft = state.Projects
-                    .Where(project => project.HasSpaceRemaining)
-                    .ToList();
+                var project = student.ProjectInterests.FirstOrDefault(projectInterest => projectInterest.HasSpaceRemaining);
 
-                var studentsLeft = state.Students
-                    .Where(student => !student.HasProject);
-
-                foreach (var student in studentsLeft)
+                if (project != null)
                 {
-                    var project = projectsLeft[_randomNumberProvider.NextInt(projectsLeft.Count)];
-
                     _studentRepository.AssignProject(student, project);
+                }
+            }
 
-                    if (!project.HasSpaceRemaining)
-                    {
-                        projectsLeft.Remove(project);
-                    }
+            // Randomly assign remaining students
+            var projectsLeft = state.Projects
+                .Where(project => project.HasSpaceRemaining)
+                .ToList();
+            var studentsLeft = state.Students
+                .Where(student => !student.HasProject);
+
+            foreach (var student in studentsLeft)
+            {
+                var project = projectsLeft[_randomNumberProvider.NextInt(projectsLeft.Count)];
+
+                _studentRepository.AssignProject(student, project);
+
+                if (!project.HasSpaceRemaining)
+                {
+                    projectsLeft.Remove(project);
                 }
             }
 

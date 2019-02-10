@@ -8,12 +8,7 @@ namespace ProjectAllocation.Core.Models
         public string Name { get; set; }
         public int? Capacity { get; set; }
         public Supervisor Supervisor { get; set; }
-        public List<Student> InterestedStudents { get; set; } = new List<Student>();
         public List<Student> AllocatedStudents { get; set; } = new List<Student>();
-
-        public List<Student> OrderedInterestedStudents => InterestedStudents
-            .Where(student => !student.HasProject)
-            .OrderByDescending(student => student.Gpa).ToList();
 
         public bool HasSpaceRemaining => Supervisor.HasSpaceRemaining && (!Capacity.HasValue || AllocatedStudents.Count < Capacity);
 

@@ -6,14 +6,14 @@ namespace ProjectAllocation.Core.Models
     {
         public string Id { get; set; }
         public decimal Gpa { get; set; }
-        public List<Project> Preferences { get; set; }
+        public List<Project> ProjectInterests { get; set; }
         public Project Project { get; set; }
 
         public bool HasProject => Project != null;
 
         public Student(List<Project> preferences)
         {
-            Preferences = preferences ?? new List<Project>();
+            ProjectInterests = preferences ?? new List<Project>();
         }
     }
 }
