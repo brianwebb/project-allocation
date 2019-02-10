@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
 using ProjectAllocation.Core;
@@ -54,7 +55,7 @@ namespace Tests
                 .Returns(0);
         }
 
-        private Processor Processor() => new Processor(_studentRepository.Object, _randomNumberProvider.Object);
+        private Processor Processor() => new Processor(new NullLogger<Processor>(), _studentRepository.Object, _randomNumberProvider.Object);
 
         [Test]
         public void ShouldBlowUpIfNotEnoughCapacityForStudents()
@@ -67,7 +68,7 @@ namespace Tests
             _state.Students.Add(new Student(null));
 
             Processor()
-                .Invoking(processor => processor.Process(_state))
+                .Invoking(processor => processor.AllocateProjects(_state))
                 .Should().Throw<ArgumentException>();
         }
 
@@ -79,7 +80,7 @@ namespace Tests
             _state.Students.Add(new Student(new List<Project> { _state.Projects[0] }));
             _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }));
 
-            var result = Processor().Process(_state);
+            var result = Processor().AllocateProjects(_state);
 
             result[_state.Students[0]].Should().Be(_state.Projects[2]);
             result[_state.Students[1]].Should().Be(_state.Projects[1]);
@@ -95,7 +96,7 @@ namespace Tests
             _state.Students.Add(new Student(new List<Project> { _state.Projects[1], _state.Projects[0], _state.Projects[2] }) { Gpa = 80 });
             _state.Students.Add(new Student(new List<Project> { _state.Projects[1], _state.Projects[0], _state.Projects[2] }) { Gpa = 70 });
 
-            var result = Processor().Process(_state);
+            var result = Processor().AllocateProjects(_state);
 
             result[_state.Students[0]].Should().Be(_state.Projects[1]);
             result[_state.Students[1]].Should().Be(_state.Projects[2]);
@@ -111,7 +112,7 @@ namespace Tests
             _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }) { Gpa = 80 });
             _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }) { Gpa = 70 });
 
-            var result = Processor().Process(_state);
+            var result = Processor().AllocateProjects(_state);
 
             result[_state.Students[0]].Should().Be(_state.Projects[1]);
             result[_state.Students[1]].Should().Be(_state.Projects[0]);
@@ -131,7 +132,7 @@ namespace Tests
                 new Student(null) { Id = "fourthstudentid" }
             };
 
-            var result = Processor().Process(_state);
+            var result = Processor().AllocateProjects(_state);
 
             result[_state.Students[0]].Should().Be(_state.Projects[0]);
             result[_state.Students[1]].Should().Be(_state.Projects[1]);
