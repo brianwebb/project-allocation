@@ -30,13 +30,10 @@ namespace Tests
             };
             var projects = new List<Project>
             {
-                new Project { Name = "some example project", Capacity = 1, Supervisor = supervisors[0] },
-                new Project { Name = "some other example project", Capacity = 2, Supervisor = supervisors[1] },
-                new Project { Name = "some third example project", Capacity = 1, Supervisor = supervisors[1] }
+                new Project(supervisors[0]) { Name = "some example project", Capacity = 1, Supervisor = supervisors[0] },
+                new Project(supervisors[1]) { Name = "some other example project", Capacity = 2, Supervisor = supervisors[1] },
+                new Project(supervisors[1]) { Name = "some third example project", Capacity = 1, Supervisor = supervisors[1] }
             };
-            supervisors[0].Projects.Add(projects[0]);
-            supervisors[1].Projects.Add(projects[1]);
-            supervisors[1].Projects.Add(projects[2]);
             var students = new List<Student>
             {
                 new Student { Id = "firststudentid" },

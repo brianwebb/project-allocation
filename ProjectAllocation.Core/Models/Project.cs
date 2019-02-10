@@ -11,5 +11,11 @@ namespace ProjectAllocation.Core.Models
         public List<Student> AllocatedStudents { get; set; } = new List<Student>();
 
         public bool IsSolved => AllocatedStudents.Count <= Capacity;
+
+        public Project(Supervisor supervisor)
+        {
+            Supervisor = supervisor;
+            supervisor.Projects.Add(this);
+        }
     }
 }
