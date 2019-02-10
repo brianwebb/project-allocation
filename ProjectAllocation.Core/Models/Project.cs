@@ -10,6 +10,6 @@ namespace ProjectAllocation.Core.Models
         public List<Student> InterestedStudents { get; set; } = new List<Student>();
         public List<Student> AllocatedStudents { get; set; } = new List<Student>();
 
-        public bool IsValid => AllocatedStudents.Count <= Capacity;
+        public bool IsSolved => AllocatedStudents.Count <= Capacity;
     }
 }

@@ -5,6 +5,7 @@ using ProjectAllocation.Core;
 using ProjectAllocation.Core.Models;
 using ProjectAllocation.Core.Repositories;
 using ProjectAllocation.Core.Utilities;
+using System;
 using System.Collections.Generic;
 
 namespace Tests
@@ -50,13 +51,7 @@ namespace Tests
                 Students = students,
                 Supervisors = supervisors
             };
-        }
 
-        private Processor Processor() => new Processor(_studentRepository.Object, _randomNumberProvider.Object);
-
-        [Test]
-        public void ShouldRandomlyAssignStudentsIfNoneHavePreferences()
-        {
             _studentRepository
                 .Setup(s => s.AssignProject(It.IsAny<Student>(), It.IsAny<Project>()))
                 .Callback<Student, Project>((student, project) =>
@@ -64,6 +59,23 @@ namespace Tests
                     student.Project = project;
                     project.AllocatedStudents.Add(student);
                 });
+        }
+
+        private Processor Processor() => new Processor(_studentRepository.Object, _randomNumberProvider.Object);
+
+        [Test]
+        public void ShouldBlowUpIfNotEnoughCapacityForStudents()
+        {
+            _state.Supervisors[0].Capacity--;
+
+            Processor()
+                .Invoking(processor => processor.Process(_state))
+                .Should().Throw<ArgumentException>();
+        }
+
+        [Test]
+        public void ShouldRandomlyAssignStudentsIfNoneHavePreferences()
+        {
             // This is the default anyway. Just being explicit. Always just give them the first project that's left.
             _randomNumberProvider
                 .Setup(r => r.NextInt(It.IsAny<int>()))

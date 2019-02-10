@@ -1,6 +1,7 @@
 ﻿using ProjectAllocation.Core.Models;
 using ProjectAllocation.Core.Repositories;
 using ProjectAllocation.Core.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,7 +20,10 @@ namespace ProjectAllocation.Core
 
         public Dictionary<Student, Project> Process(State state)
         {
-            while (!state.IsValid)
+            if (state.Students.Count < state.Supervisors.Sum(supervisor => supervisor.Capacity))
+                throw new ArgumentException($"Not enough capacity for the student list provided. Capacity = {state.Supervisors.Sum(supervisor => supervisor.Capacity)}, Student count = {state.Students.Count}", nameof(state));
+
+            while (!state.IsSolved)
             {
                 // TODO: Assign based on preferences
                 
@@ -29,7 +33,7 @@ namespace ProjectAllocation.Core
                     .ToList();
 
                 var studentsLeft = state.Students
-                    .Where(student => !student.IsValid);
+                    .Where(student => !student.IsSolved);
 
                 foreach (var student in studentsLeft)
                 {

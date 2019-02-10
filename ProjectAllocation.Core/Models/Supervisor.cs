@@ -10,6 +10,6 @@ namespace ProjectAllocation.Core.Models
         public List<Project> Projects { get; set; } = new List<Project>();
 
         public int AllocatedCount => Projects.Sum(project => project.AllocatedStudents.Count);
-        public bool IsValid => AllocatedCount <= Capacity;
+        public bool IsSolved => AllocatedCount <= Capacity;
     }
 }

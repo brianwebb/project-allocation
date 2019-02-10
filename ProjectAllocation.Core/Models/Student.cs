@@ -8,6 +8,6 @@ namespace ProjectAllocation.Core.Models
         public List<Project> Preferences { get; set; } = new List<Project>();
         public Project Project { get; set; }
 
-        public bool IsValid => Project != null;
+        public bool IsSolved => Project != null;
     }
 }

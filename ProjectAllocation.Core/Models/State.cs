@@ -9,8 +9,8 @@ namespace ProjectAllocation.Core.Models
         public List<Project> Projects { get; set; }
         public List<Student> Students { get; set; }
 
-        public bool IsValid => Supervisors.All(supervisor => supervisor.IsValid)
-            && Projects.All(project => project.IsValid)
-            && Students.All(student => student.IsValid);
+        public bool IsSolved => Supervisors.All(supervisor => supervisor.IsSolved)
+            && Projects.All(project => project.IsSolved)
+            && Students.All(student => student.IsSolved);
     }
 }
