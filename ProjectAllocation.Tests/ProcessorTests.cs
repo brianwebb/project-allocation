@@ -47,6 +47,11 @@ namespace Tests
                     student.Project = project;
                     project.AllocatedStudents.Add(student);
                 });
+
+            // This is the default anyway - just being explicit. Always just give them the first project that's left.
+            _randomNumberProvider
+                .Setup(r => r.NextInt(It.IsAny<int>()))
+                .Returns(0);
         }
 
         private Processor Processor() => new Processor(_studentRepository.Object, _randomNumberProvider.Object);
@@ -83,7 +88,40 @@ namespace Tests
         }
 
         [Test]
-        public void ShouldRandomlyAssignStudentsIfNoneHavePreferences()
+        public void ShouldAssignStudentsBasedOnGpaToPreferredProject()
+        {
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1], _state.Projects[0], _state.Projects[2] }) { Gpa = 90 });
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1], _state.Projects[0], _state.Projects[2] }) { Gpa = 60 });
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1], _state.Projects[0], _state.Projects[2] }) { Gpa = 80 });
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1], _state.Projects[0], _state.Projects[2] }) { Gpa = 70 });
+
+            var result = Processor().Process(_state);
+
+            result[_state.Students[0]].Should().Be(_state.Projects[1]);
+            result[_state.Students[1]].Should().Be(_state.Projects[2]);
+            result[_state.Students[2]].Should().Be(_state.Projects[1]);
+            result[_state.Students[3]].Should().Be(_state.Projects[0]);
+        }
+
+        [Test]
+        public void ShouldRandomlyAssignStudentsWhoDontQualifyForTheirPreferredProject()
+        {
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }) { Gpa = 90 });
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }) { Gpa = 60 });
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }) { Gpa = 80 });
+            _state.Students.Add(new Student(new List<Project> { _state.Projects[1] }) { Gpa = 70 });
+
+            var result = Processor().Process(_state);
+
+            result[_state.Students[0]].Should().Be(_state.Projects[1]);
+            result[_state.Students[1]].Should().Be(_state.Projects[0]);
+            result[_state.Students[2]].Should().Be(_state.Projects[1]);
+            result[_state.Students[3]].Should().Be(_state.Projects[2]);
+        }
+
+
+        [Test]
+        public void ShouldRandomlyAssignStudentsWithNoPreferences()
         {
             _state.Students = new List<Student>
             {
@@ -92,11 +130,6 @@ namespace Tests
                 new Student(null) { Id = "thirdstudentid" },
                 new Student(null) { Id = "fourthstudentid" }
             };
-
-            // This is the default anyway. Just being explicit. Always just give them the first project that's left.
-            _randomNumberProvider
-                .Setup(r => r.NextInt(It.IsAny<int>()))
-                .Returns(0);
 
             var result = Processor().Process(_state);
 
