@@ -9,7 +9,7 @@ namespace ProjectAllocation.Core.Models
         public List<Project> Preferences { get; set; }
         public Project Project { get; set; }
 
-        public bool IsSolved => Project != null;
+        public bool HasProject => Project != null;
 
         public Student(List<Project> preferences)
         {

@@ -27,23 +27,20 @@ namespace ProjectAllocation.Core
             {
                 // TODO: Assign based on preferences
                 
-                var projectsLeft = state.Supervisors
-                    .Where(supervisor => supervisor.AllocatedCount < supervisor.Capacity)
-                    .SelectMany(supervisor => supervisor.Projects)
+                var projectsLeft = state.Projects
+                    .Where(project => project.HasSpaceRemaining)
                     .ToList();
 
                 var studentsLeft = state.Students
-                    .Where(student => !student.IsSolved);
+                    .Where(student => !student.HasProject);
 
                 foreach (var student in studentsLeft)
                 {
-                    var projectIndex = _randomNumberProvider.NextInt(projectsLeft.Count);
-                    var project = projectsLeft[projectIndex];
+                    var project = projectsLeft[_randomNumberProvider.NextInt(projectsLeft.Count)];
 
                     _studentRepository.AssignProject(student, project);
 
-                    if ((project.Capacity.HasValue && project.AllocatedStudents.Count == project.Capacity)
-                        || project.Supervisor.AllocatedCount == project.Supervisor.Capacity)
+                    if (!project.HasSpaceRemaining)
                     {
                         projectsLeft.Remove(project);
                     }
