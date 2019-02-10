@@ -42,7 +42,8 @@ namespace ProjectAllocation.Core
 
                     _studentRepository.AssignProject(student, project);
 
-                    if (project.AllocatedStudents.Count == project.Capacity || project.Supervisor.AllocatedCount == project.Supervisor.Capacity)
+                    if ((project.Capacity.HasValue && project.AllocatedStudents.Count == project.Capacity)
+                        || project.Supervisor.AllocatedCount == project.Supervisor.Capacity)
                     {
                         projectsLeft.Remove(project);
                     }
