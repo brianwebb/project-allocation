@@ -36,10 +36,10 @@ namespace Tests
             };
             var students = new List<Student>
             {
-                new Student { Id = "firststudentid" },
-                new Student { Id = "secondstudentid" },
-                new Student { Id = "thirdstudentid" },
-                new Student { Id = "fourthstudentid" }
+                new Student(new List<Project>{ projects[0] }) { Id = "firststudentid" },
+                new Student(new List<Project>{ projects[1] }) { Id = "secondstudentid" },
+                new Student(new List<Project>{ projects[2] }) { Id = "thirdstudentid" },
+                new Student(new List<Project>{ projects[1], projects[0] }) { Id = "fourthstudentid" }
             };
 
             _state = new State
@@ -73,6 +73,15 @@ namespace Tests
         [Test]
         public void ShouldRandomlyAssignStudentsIfNoneHavePreferences()
         {
+            foreach (var student in _state.Students)
+            {
+                student.Preferences.Clear();
+            }
+            foreach (var project in _state.Projects)
+            {
+                project.InterestedStudents.Clear();
+            }
+
             // This is the default anyway. Just being explicit. Always just give them the first project that's left.
             _randomNumberProvider
                 .Setup(r => r.NextInt(It.IsAny<int>()))

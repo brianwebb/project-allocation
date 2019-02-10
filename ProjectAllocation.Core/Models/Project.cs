@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ProjectAllocation.Core.Models
 {
@@ -10,6 +11,7 @@ namespace ProjectAllocation.Core.Models
         public List<Student> InterestedStudents { get; set; } = new List<Student>();
         public List<Student> AllocatedStudents { get; set; } = new List<Student>();
 
+        public List<Student> OrderedInterestedStudents => InterestedStudents.OrderByDescending(student => student.Gpa).ToList();
         public bool IsSolved => AllocatedStudents.Count <= Capacity;
 
         public Project(Supervisor supervisor)
