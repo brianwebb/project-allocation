@@ -26,11 +26,11 @@ namespace ProjectAllocation.Core
             if (state.Students.Count > state.Supervisors.Sum(supervisor => supervisor.Capacity))
                 throw new ArgumentException($"Not enough capacity for the student list provided. Capacity = '{state.Supervisors.Sum(supervisor => supervisor.Capacity)}', Student count = '{state.Students.Count}'", nameof(state));
 
-            // Assign based on preferences. Highest GPA -> lowest
-            // TODO: Group by GPA and pick randomly within group
+            // Assign based on preferences. Highest GPA -> lowest. GPA clashes resolved by random number
             var studentsByGpa = state.Students
                 .Where(student => student.ProjectInterests.Count > 0)
-                .OrderByDescending(student => student.Gpa);
+                .OrderByDescending(student => student.Gpa)
+                .ThenBy(student => _randomNumberProvider.NextInt(state.Students.Count));
 
             _logger.LogInformation("Assigning students to projects based on their preferences, ordered by GPA.");
 
@@ -70,6 +70,16 @@ namespace ProjectAllocation.Core
                 if (!project.HasSpaceRemaining)
                 {
                     projectsLeft.Remove(project);
+                }
+                if (!project.Supervisor.HasSpaceRemaining)
+                {
+                    foreach (var supervisorProject in project.Supervisor.Projects)
+                    {
+                        if (projectsLeft.Contains(supervisorProject))
+                        {
+                            projectsLeft.Remove(supervisorProject);
+                        }
+                    }
                 }
             }
 
